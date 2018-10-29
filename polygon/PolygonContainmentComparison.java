@@ -9,7 +9,7 @@ import java.util.Random;
 
 public class PolygonContainmentComparison {
 
-    private final static double SCALE_FACTOR = 50000;
+    private final static double SCALE_FACTOR = 500000;
 
     static GeometryFactory geometryFactory = new GeometryFactory();
 
@@ -73,9 +73,9 @@ public class PolygonContainmentComparison {
     }
 
     /* Test equality of JTS and binary search responses */
-    public static boolean testResponses(ArrayList<Boolean> jtsResponses, ArrayList<Boolean> binSearchReponses) {
+    public static boolean testResponses(ArrayList<Boolean> jtsResponses, ArrayList<Boolean> binSearchResponses) {
         for (int i = 0; i < jtsResponses.size(); i++) {
-            if (jtsResponses.get(i) != binSearchReponses.get(i))
+            if (jtsResponses.get(i) != binSearchResponses.get(i))
                 return false;
         }
 
@@ -84,7 +84,7 @@ public class PolygonContainmentComparison {
 
 
     public static void main(String[] args) {
-        final int numVertices = 50000, numPoints = 10000;
+        final int numVertices = 50000, numPoints = 1000000;
         Polygon polygon = createRandomConvexPolygon(numVertices);
         ArrayList<Coordinate> queryPoints = getRandomPoints(numPoints, SCALE_FACTOR);
 
@@ -97,10 +97,10 @@ public class PolygonContainmentComparison {
         System.out.println("JTS: " + ((endTime - startTime) / 1e9)+ " s");
 
         startTime = System.nanoTime();
-        ArrayList<Boolean> binSearchReponses = doBinarySearch(polygon, queryPoints);
+        ArrayList<Boolean> binSearchResponses = doBinarySearch(polygon, queryPoints);
         endTime = System.nanoTime();
         System.out.println("Binary Search: " + ((endTime - startTime) / 1e9)+ " s\n");
 
-        System.out.println("Equal: " + testResponses(jtsResponses, binSearchReponses));
+        System.out.println("Equal: " + testResponses(jtsResponses, binSearchResponses));
     }
 }

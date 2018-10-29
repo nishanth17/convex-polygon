@@ -17,18 +17,25 @@ public class ConvexPolygon {
     private double minX, maxX;
     private double minY, maxY;
 
+    private int numVertices;
+    private boolean isClockwise;
+
     public ConvexPolygon(Polygon polygon) {
         this.polygon = polygon;
         preprocess();
     }
 
     /**
-     * NOTE: This assumes the vertices are listed in clockwise order.
+     * Pre-process the polygon to its minimum bounding box, its upper and lower chain, and whether its vertices are
+     * listed in clock-wise order or not.
      */
     private void preprocess() {
         Coordinate[] vertices = this.polygon.getCoordinates();
         vertices = Arrays.copyOfRange(vertices, 0, vertices.length-1);
 
+        this.numVertices = vertices.length;
+        // Index of lowest and rightmost point in vertices
+        int lowestRightIdx = 0;
 
         this.minX = Double.POSITIVE_INFINITY;
         this.minY = Double.POSITIVE_INFINITY;
@@ -37,23 +44,24 @@ public class ConvexPolygon {
         int minXIdx = 0, maxXIdx = 0;
 
         // Find bounding box
-        for (int i = 0; i < vertices.length; i++) {
-            Coordinate vertex = vertices[i];
-            double xCoord = vertex.x, yCoord = vertex.y;
+        for (int i = 0; i < this.numVertices; i++) {
+            Coordinate currVertex = vertices[i];
+            double currX = currVertex.x, currY = currVertex.y;
 
-            if (xCoord < minX) {
-                minX = xCoord;
+            if (currX < minX) {
+                minX = currX;
                 minXIdx = i;
             }
-            if (yCoord < minY) {
-                minY = yCoord;
+            if (currY < minY || (Utils.eq(currY, minY) && Utils.ge(currX, vertices[lowestRightIdx].x))) {
+                lowestRightIdx = i;
+                minY = currY;
             }
-            if (xCoord > maxX) {
-                maxX = xCoord;
+            if (currX > maxX) {
+                maxX = currX;
                 maxXIdx = i;
             }
-            if (yCoord > maxY) {
-                maxY = yCoord;
+            if (currY > maxY) {
+                maxY = currY;
             }
         }
 
@@ -80,8 +88,15 @@ public class ConvexPolygon {
             this.lowerChain = firstChain.toArray(new Coordinate[firstChain.size()]);
             this.upperChain = secondChain.toArray(new Coordinate[secondChain.size()]);
         }
+
+        this.isClockwise = Utils.isClockwise(vertices, lowestRightIdx);
     }
 
+    /**
+     * Point in polygon query.
+     * @param c the specified point
+     * @return
+     */
     public boolean contains(Coordinate c) {
         // Return false if c isn't within the bounding box of the current polygon
         if (c.x < minX || c.x > maxX || c.y < minY || c.y > maxY) {
@@ -91,7 +106,10 @@ public class ConvexPolygon {
         // Some point on the vertical ray to infinity from c
         Coordinate rayCoord = new Coordinate(c.x, maxY + 1);
 
-        int upperChainIdx = Utils.binarySearch(c, this.upperChain, true);
+        // Note that the upper chain is in increasing order of x-coordinates if clockwise else decreasing
+        int upperChainIdx = (this.isClockwise)? Utils.binarySearch(c, this.upperChain, true) :
+                Utils.binarySearch(c, this.upperChain, false);
+
         // Need to handle case when c is on right edge of bounding box
         boolean intersectsUpperChain = (upperChainIdx < upperChain.length - 1) ?
                 Utils.doLineSegmentsIntersect(c, rayCoord, upperChain[upperChainIdx], upperChain[upperChainIdx + 1]) :
@@ -102,7 +120,11 @@ public class ConvexPolygon {
             return false;
         }
 
-        int lowerChainIdx = Utils.binarySearch(c, this.lowerChain, false);
+        // Note that the upper chain is in decreasing order of x-coordinates if clockwise else increasing
+        int lowerChainIdx = (this.isClockwise)? Utils.binarySearch(c, this.lowerChain, false) :
+                Utils.binarySearch(c, this.lowerChain, true);
+
+
         // Need to handle case when c is on left edge of bounding box
         boolean intersectsLowerChain = (lowerChainIdx < lowerChain.length - 1) ?
                 Utils.doLineSegmentsIntersect(c, rayCoord, lowerChain[lowerChainIdx], lowerChain[lowerChainIdx + 1]) :

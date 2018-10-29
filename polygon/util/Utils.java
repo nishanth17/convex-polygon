@@ -66,10 +66,10 @@ public class Utils {
      */
     public static boolean doLineSegmentsIntersect(Coordinate p1, Coordinate q1, Coordinate p2, Coordinate q2) {
         // Find the four orientations needed for general and special cases
-        int o1 = orientation(p1, q1, p2);
-        int o2 = orientation(p1, q1, q2);
-        int o3 = orientation(p2, q2, p1);
-        int o4 = orientation(p2, q2, q1);
+        int o1 = crossProduct(p1, q1, p2);
+        int o2 = crossProduct(p1, q1, q2);
+        int o3 = crossProduct(p2, q2, p1);
+        int o4 = crossProduct(p2, q2, q1);
 
         // General case
         if (o1 != o2 && o3 != o4)
@@ -96,6 +96,26 @@ public class Utils {
     }
 
     /**
+     * Determines whether a the vertices of a polygon, specified as an array of coordinates, is in clockwise
+     * order or not.
+     * @param vertices
+     * @param lowestRightIdx
+     * @return true if clockwise and false otherwise.
+     */
+    public static boolean isClockwise(Coordinate[] vertices, int lowestRightIdx) {
+        int leftIdx = (lowestRightIdx == 0)? vertices.length - 1 : lowestRightIdx - 1;
+        int rightIdx = (lowestRightIdx == vertices.length - 1)? 0 : lowestRightIdx + 1;
+
+        Coordinate a = vertices[leftIdx];
+        Coordinate b = vertices[lowestRightIdx];
+        Coordinate c = vertices[rightIdx];
+
+        double area = (a.x * b.y - b.x * a.y) + (b.x * c.y - c.x * b.y) + (c.x * a.y - a.x * c.y);
+        // Clockwise if signed area is negative else counter-clockwise
+        return Utils.le(area, 0);
+    }
+
+    /**
      * Given three co-linear points p, q, r, check q lies on the segment [p, r]
      * Taken from <a href="https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/">https://www.geeks
      * forgeeks.org/check-if-two-given-line-segments-intersect/</a>.
@@ -119,10 +139,9 @@ public class Utils {
      *
      * @return 0 if co-linear, 1 if clockwise, -1 if anti-clockwise
      */
-    private static int orientation(Coordinate p, Coordinate q, Coordinate r) {
+    private static int crossProduct(Coordinate p, Coordinate q, Coordinate r) {
         double det = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
-        return (eq(det, 0)) ? 0 :
-                (ge(det, 0)) ? 1 : -1;
+        return (eq(det, 0)) ? 0 : (int) Math.signum(det);
     }
 
     /**
@@ -132,7 +151,7 @@ public class Utils {
      * @param b
      * @return
      */
-    private static boolean le(double a, double b) {
+    public static boolean le(double a, double b) {
         return (b - a) > EPSILON;
     }
 
@@ -143,7 +162,7 @@ public class Utils {
      * @param b
      * @return
      */
-    private static boolean ge(double a, double b) {
+    public static boolean ge(double a, double b) {
         return (a - b) > EPSILON;
     }
 
@@ -154,7 +173,7 @@ public class Utils {
      * @param b
      * @return
      */
-    private static boolean leq(double a, double b) {
+    public static boolean leq(double a, double b) {
         return (a - b) <= EPSILON;
     }
 
@@ -165,7 +184,7 @@ public class Utils {
      * @param b
      * @return
      */
-    private static boolean geq(double a, double b) {
+    public static boolean geq(double a, double b) {
         return (b - a) <= EPSILON;
     }
 
@@ -176,7 +195,7 @@ public class Utils {
      * @param b
      * @return
      */
-    private static boolean eq(double a, double b) {
+    public static boolean eq(double a, double b) {
         return Math.abs(a - b) <= EPSILON;
     }
 }
