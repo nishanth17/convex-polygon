@@ -4,7 +4,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 public class Utils {
 
-
+    // Precision for double equality checks
     private final static double EPSILON = 1e-14;
 
     /**
@@ -97,7 +97,9 @@ public class Utils {
 
     /**
      * Determines whether a the vertices of a polygon, specified as an array of coordinates, is in clockwise
-     * order or not.
+     * order or not. Adapted from <a href="http://cs.smith.edu/~jorourke/Code/polyorient.C">http://cs.smith.edu/
+     * ~jorourke/Code/polyorient.C</a>
+     *
      * @param vertices
      * @param lowestRightIdx
      * @return true if clockwise and false otherwise.
