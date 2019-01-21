@@ -55,8 +55,7 @@ public class Utils {
 
     /**
      * Checks whether the line segments [p1, q2] and [p2, q2] intersect.
-     * Taken from <a href="https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/">https://www.geeks
-     * forgeeks.org/check-if-two-given-line-segments-intersect/</a>.
+     * Taken from <a href="https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/">here</a>.
      *
      * @param p1
      * @param p2
@@ -77,19 +76,19 @@ public class Utils {
 
         // Special Cases
         // p1, q1 and p2 are co-linear and p2 lies on segment p1q1
-        if (eq(o1, 0) && onSegment(p1, p2, q1))
+        if (eq(o1, 0) && onSegmentColinear(p1, p2, q1))
             return true;
 
         // p1, q1 and q2 are co-linear and q2 lies on segment p1q1
-        if (eq(o2, 0) && onSegment(p1, q2, q1))
+        if (eq(o2, 0) && onSegmentColinear(p1, q2, q1))
             return true;
 
         // p2, q2 and p1 are co-linear and p1 lies on segment p2q2
-        if (eq(o3, 0) && onSegment(p2, p1, q2))
+        if (eq(o3, 0) && onSegmentColinear(p2, p1, q2))
             return true;
 
         // p2, q2 and q1 are co-linear and q1 lies on segment p2q2
-        if (eq(o4, 0) && onSegment(p2, q1, q2))
+        if (eq(o4, 0) && onSegmentColinear(p2, q1, q2))
             return true;
 
         return false;
@@ -97,16 +96,15 @@ public class Utils {
 
     /**
      * Determines whether a the vertices of a polygon, specified as an array of coordinates, is in clockwise
-     * order or not. Adapted from <a href="http://cs.smith.edu/~jorourke/Code/polyorient.C">http://cs.smith.edu/
-     * ~jorourke/Code/polyorient.C</a>
+     * order or not. Adapted from <a href="http://cs.smith.edu/~jorourke/Code/polyorient.C">here</a>.
      *
      * @param vertices
      * @param lowestRightIdx
      * @return true if clockwise and false otherwise.
      */
     public static boolean isClockwise(Coordinate[] vertices, int lowestRightIdx) {
-        int leftIdx = (lowestRightIdx == 0)? vertices.length - 1 : lowestRightIdx - 1;
-        int rightIdx = (lowestRightIdx == vertices.length - 1)? 0 : lowestRightIdx + 1;
+        int leftIdx = (lowestRightIdx == 0) ? vertices.length - 1 : lowestRightIdx - 1;
+        int rightIdx = (lowestRightIdx == vertices.length - 1) ? 0 : lowestRightIdx + 1;
 
         Coordinate a = vertices[leftIdx];
         Coordinate b = vertices[lowestRightIdx];
@@ -118,16 +116,40 @@ public class Utils {
     }
 
     /**
+     * Check if point r lies on the line segment [p, q]. Adapted from <a href="https://stackoverflow.com/questions/328107/how-can-you-determine-a-point-is-between-two-other-points-on-a-line-segment">
+     * here</a>.
+     * @param p
+     * @param q
+     * @param r
+     * @return
+     */
+    public static boolean onSegment(Coordinate p, Coordinate q, Coordinate r) {
+        int crossProduct = crossProduct(q, p, r);
+
+        // If the slopes of the lines p -> q and p -> r aren't equal, then r doesn't lie on [p, q]
+        if (crossProduct != 0) {
+            return false;
+        }
+
+        double dotProduct = (r.x - p.x) * (q.x - p.x) + (r.y - p.y) * (q.y - p.y);
+        if (dotProduct < 0) {
+            return false;
+        }
+
+        double squaredLength = (q.x - p.x) * (q.x - p.x) + (q.y - p.y) * (q.y - p.y);
+        return dotProduct < squaredLength;
+    }
+
+    /**
      * Given three co-linear points p, q, r, check q lies on the segment [p, r]
-     * Taken from <a href="https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/">https://www.geeks
-     * forgeeks.org/check-if-two-given-line-segments-intersect/</a>.
+     * Taken from <a href="https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/">here</a>.
      *
      * @param p
      * @param q
      * @param r
      * @return
      */
-    private static boolean onSegment(Coordinate p, Coordinate q, Coordinate r) {
+    private static boolean onSegmentColinear(Coordinate p, Coordinate q, Coordinate r) {
         return leq(q.x, Math.max(p.x, r.x)) &&
                 geq(q.x, Math.min(p.x, r.x)) &&
                 leq(q.y, Math.max(p.y, r.y)) &&
@@ -136,8 +158,7 @@ public class Utils {
 
     /**
      * Checks orientation of p -> q -> r -> p.
-     * Taken from <a href="https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/">https://www.geeks
-     * forgeeks.org/check-if-two-given-line-segments-intersect/</a>
+     * Taken from <a href="https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/">here.</a>
      *
      * @return 0 if co-linear, 1 if clockwise, -1 if anti-clockwise
      */

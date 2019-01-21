@@ -2,10 +2,10 @@ package polygon.struct;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Polygon;
+import polygon.util.Utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import polygon.util.Utils;
 
 public class ConvexPolygon {
 
@@ -31,7 +31,7 @@ public class ConvexPolygon {
      */
     private void preprocess() {
         Coordinate[] vertices = this.polygon.getCoordinates();
-        vertices = Arrays.copyOfRange(vertices, 0, vertices.length-1);
+        vertices = Arrays.copyOfRange(vertices, 0, vertices.length - 1);
 
         this.numVertices = vertices.length;
         // Index of lowest and rightmost point in vertices
@@ -94,6 +94,7 @@ public class ConvexPolygon {
 
     /**
      * Point in polygon query.
+     *
      * @param c the specified point
      * @return
      */
@@ -107,7 +108,7 @@ public class ConvexPolygon {
         Coordinate rayCoord = new Coordinate(c.x, maxY + 1);
 
         // Note that the upper chain is in increasing order of x-coordinates if clockwise else decreasing
-        int upperChainIdx = (this.isClockwise)? Utils.binarySearch(c, this.upperChain, true) :
+        int upperChainIdx = (this.isClockwise) ? Utils.binarySearch(c, this.upperChain, true) :
                 Utils.binarySearch(c, this.upperChain, false);
 
         // Need to handle case when c is on right edge of bounding box
@@ -116,12 +117,12 @@ public class ConvexPolygon {
                 Utils.doLineSegmentsIntersect(c, rayCoord, upperChain[upperChainIdx], upperChain[upperChainIdx]);
 
         // Every vertical ray cast from within any point in polygon intersects the upper chain.
-        if (! intersectsUpperChain) {
+        if (!intersectsUpperChain) {
             return false;
         }
 
         // Note that the upper chain is in decreasing order of x-coordinates if clockwise else increasing
-        int lowerChainIdx = (this.isClockwise)? Utils.binarySearch(c, this.lowerChain, false) :
+        int lowerChainIdx = (this.isClockwise) ? Utils.binarySearch(c, this.lowerChain, false) :
                 Utils.binarySearch(c, this.lowerChain, true);
 
 
@@ -131,10 +132,12 @@ public class ConvexPolygon {
                 Utils.doLineSegmentsIntersect(c, rayCoord, lowerChain[lowerChainIdx], lowerChain[lowerChainIdx]);
 
         // Every vertical ray cast from within any point in polygon does not the upper chain.
-        // This isn't strictly true on the boundary of the lower chain but who cares.
-        if (intersectsLowerChain) {
+        if (intersectsLowerChain && !
+                ((lowerChainIdx < lowerChain.length - 1) ?
+                        Utils.onSegment(lowerChain[lowerChainIdx], lowerChain[lowerChainIdx + 1], c) :
+                        Utils.onSegment(lowerChain[lowerChainIdx], lowerChain[lowerChainIdx], c)))
             return false;
-        }
+
 
         return true;
     }
